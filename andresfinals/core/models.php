@@ -1,6 +1,24 @@
 <?php
 require_once 'dbConfig.php';
 
+function logActivity($user_id, $username, $action, $action_details)
+{
+    global $pdo; 
+
+    if ($user_id == 0) {
+        $user_id = NULL;  
+    }
+    $query = "INSERT INTO activity_logs (user_id, username, action, action_details) 
+              VALUES (:user_id, :username, :action, :action_details)";
+    $stmt = $pdo->prepare($query);
+
+    $stmt->bindParam(':user_id', $user_id, PDO::PARAM_INT); 
+    $stmt->bindParam(':username', $username);
+    $stmt->bindParam(':action', $action);
+    $stmt->bindParam(':action_details', $action_details);
+
+    $stmt->execute();
+}
 function getAllApplicant($pdo) {
     $sql = "SELECT * FROM applicant ORDER BY first_name ASC";
     $stmt = $pdo->prepare($sql);
@@ -34,10 +52,7 @@ function searchForAApplicant($pdo, $searchQuery) {
 }
 
 // Insert a new applicant
-function insertNewApplicant($pdo, $first_name, $last_name, $email, 
-    $gender, $address, $state, $nationality, $job_title, 
-    $qualifications, $years_of_experience) {
-
+function insertNewApplicant($pdo, $data) {
     $sql = "INSERT INTO applicant 
             (
                 first_name,
@@ -53,19 +68,30 @@ function insertNewApplicant($pdo, $first_name, $last_name, $email,
             )
             VALUES (?,?,?,?,?,?,?,?,?,?)";
 
-    $stmt = $pdo->prepare($sql);
-    $executeQuery = $stmt->execute([
-        $first_name, $last_name, $email, 
-        $gender, $address, $state, 
-        $nationality, $job_title, 
-        $qualifications, $years_of_experience
-    ]);
+    // Check if $data is an array and pass it correctly to execute
+    if (is_array($data)) {
+        $stmt = $pdo->prepare($sql);
+        $executeQuery = $stmt->execute([
+            $data['first_name'],
+            $data['last_name'],
+            $data['email'],
+            $data['gender'],
+            $data['address'],
+            $data['state'],
+            $data['nationality'],
+            $data['job_title'],
+            $data['qualifications'],
+            $data['years_of_experience']
+        ]);
 
-    if ($executeQuery) {
-        return true;
+        return $executeQuery;
+    } else {
+        return false;
     }
-    return false;
 }
+    
+
+
 
 // Edit an existing applicant's details
 function editApplicant($pdo, $first_name, $last_name, $email, $gender, 
@@ -109,4 +135,9 @@ function deleteApplicant($pdo, $id) {
     }
     return false;
 }
+
+
+
 ?>
+
+

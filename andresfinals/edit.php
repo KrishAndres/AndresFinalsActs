@@ -1,5 +1,40 @@
 <?php require_once 'core/handleForms.php'; ?>
-<?php require_once 'core/models.php'; ?>
+<?php require_once 'core/models.php'; 
+
+
+// Check if the user is logged in
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+// Retrieve logged-in user details from the session
+$user_id = $_SESSION['user_id'];
+$username = $_SESSION['username'];
+
+// Initialize $applicant and $applicant_id
+$applicant = null;
+$applicant_id = null;
+
+// Handle GET request to fetch applicant details
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && isset($_GET['id'])) {
+    $applicant_id = $_GET['id'];
+
+    // Fetch the applicant details from the database
+    $query = "SELECT * FROM applicant WHERE id = :applicant_id";
+    $stmt = $pdo->prepare($query);
+    $stmt->bindParam(':applicant_id', $applicant_id, PDO::PARAM_INT);
+    $stmt->execute();
+    $applicant = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$applicant) {
+        echo "Invalid applicant ID.";
+        exit();
+    }
+}
+
+
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>

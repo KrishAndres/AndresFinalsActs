@@ -11,7 +11,29 @@ CREATE TABLE applicant (
     qualifications VARCHAR(255),  -- job position (e.g., Medical Degree, Nursing Degree)
     years_of_experience INT,  --  field for years of experience 
     date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    
 );
+
+CREATE TABLE user_accounts (
+	user_id INT AUTO_INCREMENT PRIMARY KEY,
+	username VARCHAR(255),
+	first_name VARCHAR(255),
+	last_name VARCHAR(255),
+	password TEXT,
+	date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMP 
+);
+
+CREATE TABLE activity_logs (
+    log_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    username VARCHAR(255),
+    actions VARCHAR(255),
+    action_details TEXT,
+action_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user_accounts(user_id)
+);
+
+ALTER TABLE activity_logs ADD COLUMN action VARCHAR(255);
 
 INSERT INTO applicant (first_name, last_name, email, gender, address, state, nationality, job_title, qualifications, years_of_experience, date_added) VALUES
 ('Sophia', 'Roberts', 'sophia.roberts@email.com', 'Female', '3939 Birch Ave, Town', 'TX', 'American', 'Healthcare Assistant', 'Health Care Assistant Cert', 3, '2024-10-31 17:45:00'),

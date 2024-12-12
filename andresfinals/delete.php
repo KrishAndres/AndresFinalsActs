@@ -1,7 +1,48 @@
 <?php 
 require_once 'core/models.php'; 
 require_once 'core/dbConfig.php'; 
-?>
+
+if (isset($_GET['id'])) 
+    $id = htmlspecialchars($_GET['id']); // Sanitize the ID for security
+
+    // Fetch applicant details from the database
+    $query = $pdo->prepare("SELECT * FROM applicant WHERE id = :id");
+    $query->execute(['id' => $id]);
+    $applicant = $query->fetch(PDO::FETCH_ASSOC);
+
+    // If the user has confirmed the deletion
+    if (isset($_GET['confirm']) && $_GET['confirm'] == 'yes') {
+
+        // First, delete related activity logs if needed
+        $deleteLogsQuery = "DELETE FROM activity_logs WHERE log_id = :id";
+        $deleteLogsStmt = $pdo->prepare($deleteLogsQuery);
+        $deleteLogsStmt->bindParam(':id', $id);
+        $deleteLogsStmt->execute();
+
+        // Now delete the applicant
+        $deleteApplicantQuery = "DELETE FROM applicant WHERE id = :id";
+        $deleteApplicantStmt = $pdo->prepare($deleteApplicantQuery);
+        $deleteApplicantStmt->bindParam(':id', $id);
+
+        if ($deleteApplicantStmt->execute()) {
+            // Log the activity of the deletion
+            logActivity($_SESSION['user_id'], $_SESSION['username'], 'delete', 'Deleted applicant with ID: ' . $id);
+
+            // Set a success message
+            $_SESSION['message'] = "Applicant deleted successfully.";
+
+            // Redirect to the main page
+            header('Location: index.php');
+            exit();
+        } else {
+            // Set an error message
+            $_SESSION['message'] = "Error deleting applicant.";
+            header('Location: index.php');
+            exit();
+        }
+    }
+
+        ?>
 
 <!DOCTYPE html>
 <html lang="en">
